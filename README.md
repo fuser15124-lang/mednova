@@ -1,40 +1,52 @@
-# MedNova AI — runnable starter
+# MedNova AI — Streamlit Community Cloud starter
 
-An original multilingual medical-information platform starter. This repository provides a working FastAPI backend, SQLite persistence, basic account authentication, a provider-independent OpenAI-compatible chat adapter, live PubMed search via NCBI E-utilities, document upload/extraction, and a responsive web interface with six locale files and RTL support.
+This repository includes a Streamlit UI (`streamlit_app.py`) and the original FastAPI API (`app/main.py`). For the simplest Streamlit deployment, choose `streamlit_app.py` as the app entry point.
 
-> **Clinical safety:** This is a software starter, not a medical device and not clinically validated. AI answers may be wrong and are not a diagnosis or treatment plan. Do not upload identifiable patient data to an unapproved environment. Professional access is not verified in this starter. Image diagnosis, medication interaction checking, validated calculators, production-grade storage/scanning, and mobile app packaging are not implemented.
+## Features in the Streamlit interface
+- Email/password registration and sign-in with salted scrypt password hashes.
+- Per-user saved conversations using the included SQLAlchemy models.
+- AI chat through an OpenAI-compatible chat-completions API (Groq is supported).
+- PubMed search using NCBI E-utilities.
+- Text extraction from PDF and UTF-8 TXT documents.
+- English and Persian UI labels, with language selection.
+- Medical-information disclaimer and honest error handling when AI is not configured.
 
-## Run locally
+## Deploy to Streamlit Community Cloud
+1. Push this repository to GitHub.
+2. Go to https://share.streamlit.io/ and choose **Create app**.
+3. Select the repository/branch and set **Main file path** to `streamlit_app.py`.
+4. Open **Advanced settings / Secrets** and add secrets similar to:
 
-Requires Python 3.11+.
-
-```bash
-python -m venv .venv
-# macOS/Linux: source .venv/bin/activate
-# Windows: .venv\\Scripts\\activate
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --reload
+```toml
+AI_BASE_URL = "https://api.groq.com/openai/v1"
+AI_API_KEY = "paste-your-new-rotated-key-here"
+AI_MODEL = "a-supported-model-name"
+JWT_SECRET = "replace-with-a-long-random-secret"
+DATABASE_URL = "sqlite:///./mednova.db"
+MAX_UPLOAD_MB = "10"
 ```
 
-Open http://127.0.0.1:8000. API docs: http://127.0.0.1:8000/docs.
+Use a newly rotated API key. Never commit keys to GitHub or put them in frontend/static files. Confirm the selected model is available to your provider account. For Groq, consult its current model list.
 
-Without `AI_API_KEY`, chat returns an honest `503` error; it never invents a provider response. To enable chat, set `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL` in `.env` for an OpenAI-compatible chat-completions endpoint. Keep secrets server-side.
+5. Click **Deploy** and wait for the app to start.
 
-PubMed search uses public NCBI E-utilities and needs internet access. Respect NCBI policies and rate limits. SQLite is for local development; use PostgreSQL, migrations, private object storage, managed secrets, HTTPS, monitoring, and a security review before production.
+## Important limitations
+- Streamlit Community Cloud has resource/sleep limitations and is not a production hosting guarantee.
+- SQLite storage on a hosted app may not be durable across rebuilds/redeploys. For persistent accounts and history, configure a managed PostgreSQL database and set `DATABASE_URL` to its connection URL. Do not use a local SQLite file as the only production database.
+- This starter does not include email verification, password reset, MFA, clinician credential verification, malware scanning, OCR for scanned PDFs, or clinical validation.
+- Do not upload identifiable patient data. The app is educational, not a diagnostic tool, and AI outputs may be inaccurate.
+- Professional access is deliberately disabled until a real verification workflow is implemented.
+- The existing FastAPI backend remains in `app/main.py`; Streamlit can run without deploying that HTTP server because the Streamlit UI calls the shared Python functions directly.
 
-## Included endpoints
+## Local run (Windows)
+```powershell
+py -m venv .venv
+.venv\\Scripts\\Activate.ps1
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
 
-- `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
-- `GET /api/health`
-- `POST /api/chat` (authenticated, persists conversations and messages)
-- `GET /api/conversations`, `GET /api/conversations/{id}`, `DELETE /api/conversations/{id}`
-- `GET /api/evidence/pubmed?q=...&page=1`
-- `POST /api/documents` (authenticated, size/type checks, text extraction for TXT and text-based PDF)
-- `GET /api/documents`
-
-## Current implementation status
-
-Working in this starter: registration/login, hashed passwords, bearer tokens, per-user conversation/document ownership, SQLite persistence, configurable AI provider adapter, live PubMed metadata/abstract retrieval, basic TXT/PDF extraction, six language dictionaries, RTL/LTR layout, responsive dashboard, Docker configuration, and basic tests.
-
-Not yet production-ready: email verification/password reset, MFA, formal clinician credential verification, robust malware scanning/OCR, encrypted object storage, PostgreSQL/Alembic/Redis worker, streaming, full translation QA, medical safety evaluation, clinical calculators, validated image models, admin workflows, mobile release builds, and compliance review.
+To run the original FastAPI API instead:
+```powershell
+uvicorn app.main:app --reload
+```

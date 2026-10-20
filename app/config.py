@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 720
     max_upload_mb: int = 10
     ai_base_url: str = "https://api.groq.com/openai/v1"
-    ai_api_key: str = "gsk_ZEuUHxoKr2rc30GFRLsWWGdyb3FYUjZLHcFiZnnrEArGJDPGxfso0"
+    ai_api_key: str = "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"
     ai_model: str = "llama-3.3-70b-versatile"
     ai_timeout_seconds: int = 45
     ncbi_tool: str = "MedNovaAI"

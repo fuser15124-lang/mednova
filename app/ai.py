@@ -19,6 +19,24 @@ async def answer(messages: list[dict], language: str = "en") -> str:
                 raise ValueError("Empty model response")
             return content.strip()
     except httpx.HTTPStatusError as exc:
-        raise HTTPException(502, f"AI provider returned HTTP {exc.response.status_code}")
+        status = exc.response.status_code
+        if status == 401:
+            raise HTTPException(
+                502,
+                "Groq authentication failed (HTTP 401). Check the configured AI_API_KEY "
+                "in Streamlit Cloud Settings > Secrets, confirm AI_BASE_URL is "
+                "https://api.groq.com/openai/v1, and reboot the app after correcting settings."
+            )
+        if status == 403:
+            raise HTTPException(
+                502,
+                "Groq denied access (HTTP 403). Check API key permissions and account access."
+            )
+        if status == 429:
+            raise HTTPException(
+                502,
+                "Groq rate limit or quota reached (HTTP 429). Check account limits and try again."
+            )
+        raise HTTPException(502, f"AI provider returned HTTP {status}")
     except (httpx.HTTPError, KeyError, IndexError, ValueError):
         raise HTTPException(502, "AI provider is unavailable or returned an invalid response. Your message has not been answered.")

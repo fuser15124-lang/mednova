@@ -50,3 +50,13 @@ To run the original FastAPI API instead:
 ```powershell
 uvicorn app.main:app --reload
 ```
+
+
+## Streamlit Cloud: Groq API configuration
+
+In Streamlit Community Cloud, open this app's **Settings → Secrets** and verify the
+existing `AI_API_KEY`. If it is invalid, replace it with a valid Groq key, then save
+and reboot the app. Confirm the base URL is `https://api.groq.com/openai/v1` and the
+model is supported by your Groq account.
+
+Keep API keys private. Do not commit `.env` or `.streamlit/secrets.toml` to a public repository.
